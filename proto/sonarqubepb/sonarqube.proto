@@ -1,0 +1,46 @@
+syntax = "proto3";
+package sonarqubepb;
+option go_package = "./proto/sonarqubepb";
+
+message Project {
+    string name = 1;
+    string branch = 2;
+    string url = 3;
+}
+
+message GetProjectReq {
+    string username = 1;
+    string project_name = 2;
+    string branch_name = 3;
+    string token = 4;
+}
+
+message GetProjectsReq {
+    string username = 1;
+    string token = 2;
+}
+
+message ProjectResp {
+    repeated Project projects = 1;
+    string code = 2;
+    string message = 3;
+}
+
+message CreateProjectReq {
+    string username = 1;
+    string project_name = 2;
+    string branch_name = 3;
+    string url = 4;
+    string token = 5;
+}
+
+message CreateProjectResp {
+    string code = 1;
+    string message = 2;
+}
+
+service SonarQube {
+    rpc GetProject(GetProjectReq) returns (ProjectResp) {}
+    rpc GetProjects(GetProjectsReq) returns (ProjectResp) {}
+    rpc CreateProject(CreateProjectReq) returns (CreateProjectResp) {}
+}
