@@ -1,0 +1,26 @@
+{
+    "sonarHost": "http://localhost:9000",
+    "sonarUser": "admin",
+    "sonarPassword": "",
+    "sonarGlobalToken": "",
+
+    "mysqlHost": "127.0.0.1",
+    "mysqlUser": "root",
+    "mysqlPassword": "",
+    "mysqlDatabase": "quality_hub",
+    "mysqlPort": "3306",
+    
+    "redisHost": "127.0.0.1",
+    "redisPort": "6379",
+
+    "etcdHost": "127.0.0.1",
+    "etcdPort": "2379",
+
+    "OpenaiSK": "",
+
+    "userServerHost": "localhost:50051",
+    "sonarqubeServerHost": "localhost:50052",
+    "chatServerHost": "localhost:50053",
+    "noticeServerHost": "localhost:50054"
+    
+}

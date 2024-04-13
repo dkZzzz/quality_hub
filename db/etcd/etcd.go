@@ -6,6 +6,8 @@ import (
 	"time"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
+
+	"github.com/dkZzzz/quality_hub/config"
 )
 
 var (
@@ -19,7 +21,7 @@ func init() {
 func InitEtcd() {
 	// 连接etcd
 	config := clientv3.Config{
-		Endpoints:   []string{"localhost:2379"}, // Etcd 服务器地址
+		Endpoints:   []string{config.Cfg.EtcdHost}, // Etcd 服务器地址
 		DialTimeout: 5 * time.Second,
 	}
 

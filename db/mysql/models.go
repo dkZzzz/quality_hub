@@ -11,11 +11,17 @@ type User struct {
 }
 
 type Project struct {
-	ID int `json:"id" gorm:"primary_key"`
+	ID          int    `json:"id" gorm:"primary_key"`
+	ProjectName string `json:"project_name"`
+	Username    string `json:"username"`
+	BranchName  string `json:"branch_name"`
+	Url         string `json:"url"`
+	ReportID    int    `json:"report_id"`
 }
 
 type Report struct {
-	ID int `json:"id" gorm:"primary_key"`
+	ID        int `json:"id" gorm:"primary_key"`
+	ProjectID int `json:"project_id"`
 }
 
 type Advice struct {

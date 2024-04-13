@@ -5,13 +5,14 @@ import (
 	"net"
 
 	"github.com/dkZzzz/quality_hub/cmd/sonarqube"
+	"github.com/dkZzzz/quality_hub/config"
 	"github.com/dkZzzz/quality_hub/db/etcd"
 	"github.com/dkZzzz/quality_hub/proto/sonarqubepb"
 	"google.golang.org/grpc"
 )
 
 func Init_server() {
-	lis, err := net.Listen("tcp", "localhost:50052")
+	lis, err := net.Listen("tcp", config.Cfg.SonarqubeServerHost)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

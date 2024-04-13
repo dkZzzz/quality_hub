@@ -30,6 +30,7 @@ var (
 	}
 )
 
+// user模块创建用户
 func CreateUser(ctx context.Context, username, password, email string, argon2Params *Argon2Params) (int, error) {
 	var users []User
 	err := DB.WithContext(ctx).Where("username = ?", username).Find(&users).Error
@@ -61,6 +62,7 @@ func CreateUser(ctx context.Context, username, password, email string, argon2Par
 	return users[0].ID, nil
 }
 
+// user模块检查用户密码
 func CheckUser(ctx context.Context, username, password string) (int, error) {
 	var user User
 	err := DB.WithContext(ctx).Where("username = ?", username).Find(&user).Error
@@ -82,6 +84,7 @@ func CheckUser(ctx context.Context, username, password string) (int, error) {
 	return user.ID, nil
 }
 
+// user模块删除用户
 func ModifyUsername(ctx context.Context, oldUsername, NewUsername string) error {
 	var user User
 	err := DB.WithContext(ctx).Where("username = ?", oldUsername).First(user).Update("username", NewUsername).Error
@@ -91,6 +94,7 @@ func ModifyUsername(ctx context.Context, oldUsername, NewUsername string) error 
 	return nil
 }
 
+// user模块修改密码
 func ModifyPassword(ctx context.Context, username, newPassword string) error {
 	var user User
 	password, err := generateFromPassword(newPassword, Argon2ParamVar)
@@ -105,6 +109,7 @@ func ModifyPassword(ctx context.Context, username, newPassword string) error {
 	return nil
 }
 
+// user模块修改邮箱
 func ModifyEmail(ctx context.Context, username, newEmail string) error {
 	var user User
 	err := DB.WithContext(ctx).Where("username = ?", username).First(user).Update("email", newEmail).Error
@@ -114,6 +119,34 @@ func ModifyEmail(ctx context.Context, username, newEmail string) error {
 	return nil
 }
 
+// sonarqube模块创建项目
+func CreateProject(ctx context.Context, username, projectName, branchName, url, token string) error {
+	var user User
+	err := DB.WithContext(ctx).Where("username = ?", username).Find(&user).Error
+	if err != nil {
+		return err
+	}
+	if user.ID == 0 {
+		return errors.New("user does not exist")
+	}
+
+	var project Project
+	err = DB.WithContext(ctx).Where("project_name = ?", projectName).Find(&project).Error
+	if err != nil {
+		return err
+	}
+	if project.ID != 0 {
+		return errors.New("project already exists")
+	}
+
+	err = DB.WithContext(ctx).Create(&Project{ProjectName: projectName, Username: username, BranchName: branchName, Url: url}).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// 加密密码
 func generateFromPassword(password string, argon2Params *Argon2Params) (encodedHash string, err error) {
 	salt, err := generateRandomBytes(argon2Params.SaltLength)
 	if err != nil {
@@ -130,6 +163,7 @@ func generateFromPassword(password string, argon2Params *Argon2Params) (encodedH
 	return encodedHash, nil
 }
 
+// 生成随机字节
 func generateRandomBytes(saltLength uint32) ([]byte, error) {
 	buf := make([]byte, saltLength)
 	_, err := rand.Read(buf)
@@ -140,6 +174,7 @@ func generateRandomBytes(saltLength uint32) ([]byte, error) {
 	return buf, nil
 }
 
+// 比较密码和哈希
 func comparePasswordAndHash(password, encodedHash string) (match bool, err error) {
 	argon2Params, salt, hash, err := decodeHash(encodedHash)
 	if err != nil {
@@ -154,6 +189,7 @@ func comparePasswordAndHash(password, encodedHash string) (match bool, err error
 	return false, nil
 }
 
+// 解码哈希
 func decodeHash(encodedHash string) (argon2Params *Argon2Params, salt, hash []byte, err error) {
 	vals := strings.Split(encodedHash, "$")
 	if len(vals) != 6 {

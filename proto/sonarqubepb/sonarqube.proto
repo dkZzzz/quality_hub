@@ -35,7 +35,7 @@ message CreateProjectReq {
 }
 
 message CreateProjectResp {
-    string code = 1;
+    int32 code = 1;
     string message = 2;
 }
 

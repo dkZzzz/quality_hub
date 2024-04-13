@@ -35,7 +35,6 @@ func CreateProject(c *gin.Context) {
 		Url:         param.Url,
 		Token:       param.Token,
 	}
-	rsp, _ := rpc.CreateProject(&req)
-	// c.JSON(ToResponse(rsp))
+	rpc.CreateProject(&req)
 	c.JSON(http.StatusOK, gin.H{})
 }
