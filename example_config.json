@@ -2,7 +2,6 @@
     "sonarHost": "http://localhost:9000",
     "sonarUser": "admin",
     "sonarPassword": "",
-    "sonarGlobalToken": "",
 
     "mysqlHost": "127.0.0.1",
     "mysqlUser": "root",
@@ -17,6 +16,8 @@
     "etcdPort": "2379",
 
     "OpenaiSK": "",
+
+    "CodeStorePath": "",
 
     "userServerHost": "localhost:50051",
     "sonarqubeServerHost": "localhost:50052",

@@ -20,8 +20,10 @@ func init() {
 
 func InitEtcd() {
 	// 连接etcd
+	log.Println("etcd init")
+	log.Println(config.Cfg.EtcdHost + ":" + config.Cfg.EtcdPort)
 	config := clientv3.Config{
-		Endpoints:   []string{config.Cfg.EtcdHost}, // Etcd 服务器地址
+		Endpoints:   []string{config.Cfg.EtcdHost + ":" + config.Cfg.EtcdPort}, // Etcd 服务器地址
 		DialTimeout: 5 * time.Second,
 	}
 
@@ -51,6 +53,7 @@ func Get(service string) (bool, error) {
 }
 
 func Register(service string) error {
+	log.Printf("register service %s", service)
 	service = "services" + "/" + service
 	_, err := Client.Put(context.Background(), service, "true")
 	if err != nil {

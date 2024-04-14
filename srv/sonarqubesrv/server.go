@@ -19,9 +19,9 @@ func Init_server() {
 	s := grpc.NewServer()
 	sonarqubepb.RegisterSonarQubeServer(s, &sonarqube.SonarQubeServerImpl{})
 	log.Printf("server listening at %v", lis.Addr())
+	etcd.Register("sonarqube")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
-	etcd.Register("sonarqube")
 	select {}
 }

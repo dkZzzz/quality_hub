@@ -20,9 +20,9 @@ var (
 
 func InitRedis() {
 	Client = redis.NewClient(&redis.Options{
-		Addr:     config.Cfg.RedisHost, // Redis 服务器地址
-		Password: "",                   // Redis 访问密码，如果没有则为空字符串
-		DB:       0,                    // 使用的 Redis 数据库编号
+		Addr:     config.Cfg.RedisHost + ":" + config.Cfg.RedisPort, // Redis 服务器地址
+		Password: "",                                                // Redis 访问密码，如果没有则为空字符串
+		DB:       0,                                                 // 使用的 Redis 数据库编号
 	})
 
 	_, err := Client.Ping().Result()

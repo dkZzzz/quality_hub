@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"os"
 )
 
@@ -11,10 +12,9 @@ var (
 )
 
 type Config struct {
-	SonarHost        string `json:"sonarHost"`
-	SonarUser        string `json:"sonarUser"`
-	SonarPassword    string `json:"sonarPassword"`
-	SonarGlobalToken string `json:"sonarGlobalToken"`
+	SonarHost     string `json:"sonarHost"`
+	SonarUser     string `json:"sonarUser"`
+	SonarPassword string `json:"sonarPassword"`
 
 	MysqlHost     string `json:"mysqlHost"`
 	MysqlUser     string `json:"mysqlUser"`
@@ -30,6 +30,8 @@ type Config struct {
 
 	OpenaiSK string `json:"openaiSK"`
 
+	CodeStorePath string `json:"codeStorePath"`
+
 	UserServerHost      string `json:"userServerHost"`
 	SonarqubeServerHost string `json:"sonarqubeServerHost"`
 	ChatServerHost      string `json:"chatServerHost"`
@@ -41,6 +43,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+	log.Println(Cfg)
 }
 
 func LoadConfig() (*Config, error) {

@@ -19,9 +19,9 @@ func Init_server() {
 	s := grpc.NewServer()
 	userpb.RegisterUserServiceServer(s, &user.UserServerImpl{})
 	log.Printf("server listening at %v", lis.Addr())
+	etcd.Register("user")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
-	etcd.Register("user")
 	select {}
 }

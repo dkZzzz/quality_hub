@@ -173,6 +173,7 @@ func ModifyPassword(c *gin.Context) {
 	var param ModifyPasswordParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
+			"code":  400,
 			"msg":   "参数错误",
 			"error": err.Error(),
 		})
@@ -183,7 +184,8 @@ func ModifyPassword(c *gin.Context) {
 	ok, err := etcd.Get("user")
 	if !ok || err != nil {
 		c.JSON(500, gin.H{
-			"msg": "服务发现失败",
+			"code": 500,
+			"msg":  "服务发现失败",
 		})
 		return
 	}

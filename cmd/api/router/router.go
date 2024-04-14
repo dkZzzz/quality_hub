@@ -23,4 +23,9 @@ func RegisterRoutes(r *gin.Engine) {
 		user.POST("/modify_password", handlers.ModifyPassword)
 	}
 
+	// sonarqube模块
+	sonarqube := r.Group("/sonarqube")
+	{
+		sonarqube.POST("/create_project", handlers.CreateProject)
+	}
 }

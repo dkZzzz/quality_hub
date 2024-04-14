@@ -3,12 +3,15 @@ package sonarqube
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/dkZzzz/quality_hub/config"
 	"github.com/dkZzzz/quality_hub/db/mysql"
 	"github.com/dkZzzz/quality_hub/db/redis"
+	"github.com/dkZzzz/quality_hub/pkg/clone"
 	"github.com/dkZzzz/quality_hub/pkg/sonarapi"
 	"github.com/dkZzzz/quality_hub/proto/sonarqubepb"
 )
@@ -35,7 +38,7 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 	}
 
 	// 向sonarqube发送请求
-	_, err := sonarapi.CreateProject(in.ProjectName, in.ProjectName)
+	err := sonarapi.CreateProject(in.ProjectName, in.ProjectName)
 	if err != nil {
 		return &sonarqubepb.CreateProjectResp{
 			Code:    500,
@@ -52,10 +55,28 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 		}, nil
 	}
 
-	path := "git clone 后的路径"
-	
+	tmp := strings.Split(in.Url, "/")
+	pName := tmp[len(tmp)-1]
+	pName = pName[:len(pName)-4]
+	path := config.Cfg.CodeStorePath + pName
+
+	// 克隆代码
+	err = clone.Clone(in.Url, pName)
+	if err != nil {
+		log.Println(err)
+	}
+
+	// 创建token
+	token, err := sonarapi.GenerateProjectToken(in.ProjectName, in.ProjectName)
+	if err != nil {
+		return &sonarqubepb.CreateProjectResp{
+			Code:    500,
+			Message: create_project_error,
+		}, nil
+	}
+
 	// 扫描代码
-	err = Scan(path, in.ProjectName, config.Cfg.SonarGlobalToken)
+	err = Scan(path, in.ProjectName, token)
 	if err != nil {
 		return &sonarqubepb.CreateProjectResp{
 			Code:    500,
@@ -73,9 +94,13 @@ func Scan(path, projectKey, token string) error {
 	cmd := exec.Command("sonar-scanner",
 		fmt.Sprintf("-Dsonar.projectKey=%s", projectKey),
 		fmt.Sprintf("-Dsonar.sources=%s", path),
-		"-Dsonar.host.url=http://localhost:9000",
+		fmt.Sprintf("-Dsonar.projectBaseDir=%s", path),
+		fmt.Sprintf("-Dsonar.host.url=%s", config.Cfg.SonarHost),
 		fmt.Sprintf("-Dsonar.token=%s", token))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+	return nil
 }

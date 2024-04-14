@@ -5,20 +5,39 @@ import (
 	"github.com/dkZzzz/quality_hub/pkg/sentreq"
 )
 
-func CreateProject(name, projectKey string) (map[string]string, error) {
-	sonarHost := config.Cfg.SonarHost
-	url := sonarHost + "/api/projects/create"
+// sonarqube创建项目
+func CreateProject(name, projectKey string) error {
+	url := config.Cfg.SonarHost + "/api/projects/create"
 	username := config.Cfg.SonarUser
 	password := config.Cfg.SonarPassword
 
 	formData := map[string]string{
-		"project":    projectKey,
+		"project":      projectKey,
+		"name":         name,
+		"mainBranch":   "main",
+		"creationMode": "manual",
+	}
+	_, err := sentreq.FormDataReq(url, username, password, formData)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GenerateProjectToken(name, projectKey string) (string, error) {
+	url := config.Cfg.SonarHost + "/api/user_tokens/generate"
+	username := config.Cfg.SonarUser
+	password := config.Cfg.SonarPassword
+
+	formData := map[string]string{
 		"name":       name,
-		"mainBranch": "main",
+		"type":       "PROJECT_ANALYSIS_TOKEN",
+		"projectKey": projectKey,
 	}
 	response, err := sentreq.FormDataReq(url, username, password, formData)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return response["project"].(map[string]string), nil
+
+	return response["token"].(string), nil
 }

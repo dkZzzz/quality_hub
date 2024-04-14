@@ -2,3 +2,4 @@ private.pem
 public.pem
 .vscode/
 config.json
+/cmd/api/.scannerwork/

@@ -28,6 +28,7 @@ func CreateProject(c *gin.Context) {
 		})
 		return
 	}
+
 	req := sonarqubepb.CreateProjectReq{
 		Username:    param.Username,
 		ProjectName: param.ProjectName,
