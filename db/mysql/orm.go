@@ -146,6 +146,15 @@ func CreateProject(ctx context.Context, username, projectName, branchName, url, 
 	return nil
 }
 
+// sonarqube模块创建issue
+func CreateIssue(ctx context.Context, ProjectName, Type, File string, StartLine, EndLine, StartOffset, EndOffset int, Message string) error {
+	err := DB.WithContext(ctx).Create(&Issue{ProjectName: ProjectName, Type: Type, File: File, StartLine: StartLine, EndLine: EndLine, StartOffset: StartOffset, EndOffset: EndOffset, Message: Message}).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // 加密密码
 func generateFromPassword(password string, argon2Params *Argon2Params) (encodedHash string, err error) {
 	salt, err := generateRandomBytes(argon2Params.SaltLength)

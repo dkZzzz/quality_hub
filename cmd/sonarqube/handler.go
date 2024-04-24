@@ -3,7 +3,6 @@ package sonarqube
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -19,7 +18,10 @@ import (
 var (
 	token_error          = "token验证失败"
 	create_project_error = "创建项目失败"
+	create_token_error   = "创建项目token失败"
 	scanning_error       = "扫描代码失败"
+	get_issue_error      = "获取issue失败"
+	get_hotspot_error    = "获取hotspot失败"
 	create_project_succ  = "创建项目成功"
 )
 
@@ -27,6 +29,16 @@ var (
 
 type SonarQubeServerImpl struct {
 	sonarqubepb.UnimplementedSonarQubeServer
+}
+
+type Isu struct {
+	Type        string `json:"type"`
+	File        string `json:"file"`
+	StartLine   int    `json:"start_line"`
+	EndLine     int    `json:"end_line"`
+	StartOffset int    `json:"start_offset"`
+	EndOffset   int    `json:"end_offset"`
+	Message     string `json:"message"`
 }
 
 func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb.CreateProjectReq) (*sonarqubepb.CreateProjectResp, error) {
@@ -47,14 +59,11 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 	}
 
 	// 在本地库创建记录
-	err = mysql.CreateProject(ctx, in.Username, in.ProjectName, in.BranchName, in.Url, in.Token)
-	if err != nil {
-		return &sonarqubepb.CreateProjectResp{
-			Code:    500,
-			Message: create_project_error,
-		}, nil
-	}
+	go func() {
+		mysql.CreateProject(ctx, in.Username, in.ProjectName, in.BranchName, in.Url, in.Token)
+	}()
 
+	// 处理url
 	tmp := strings.Split(in.Url, "/")
 	pName := tmp[len(tmp)-1]
 	pName = pName[:len(pName)-4]
@@ -63,7 +72,10 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 	// 克隆代码
 	err = clone.Clone(in.Url, pName)
 	if err != nil {
-		log.Println(err)
+		return &sonarqubepb.CreateProjectResp{
+			Code:    500,
+			Message: create_project_error,
+		}, nil
 	}
 
 	// 创建token
@@ -71,7 +83,7 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 	if err != nil {
 		return &sonarqubepb.CreateProjectResp{
 			Code:    500,
-			Message: create_project_error,
+			Message: create_token_error,
 		}, nil
 	}
 
@@ -83,6 +95,38 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 			Message: scanning_error,
 		}, nil
 	}
+
+	// 获取issue到本地库
+	response, err := sonarapi.GetIssueByProject(in.ProjectName)
+	if err != nil {
+		return &sonarqubepb.CreateProjectResp{
+			Code:    500,
+			Message: get_issue_error,
+		}, nil
+	}
+
+	go func() {
+		Isus := ParseIssue(response)
+		for _, isu := range Isus {
+			mysql.CreateIssue(ctx, in.ProjectName, isu.Type, isu.File, isu.StartLine, isu.EndLine, isu.StartOffset, isu.EndOffset, isu.Message)
+		}
+	}()
+
+	// 获取hotspot到本地库
+	response, err = sonarapi.GetHotspotByProject(in.ProjectName)
+	if err != nil {
+		return &sonarqubepb.CreateProjectResp{
+			Code:    500,
+			Message: get_hotspot_error,
+		}, nil
+	}
+
+	go func() {
+		Isus := PaserHotspot(response)
+		for _, isu := range Isus {
+			mysql.CreateIssue(ctx, in.ProjectName, isu.Type, isu.File, isu.StartLine, isu.EndLine, isu.StartOffset, isu.EndOffset, isu.Message)
+		}
+	}()
 
 	return &sonarqubepb.CreateProjectResp{
 		Code:    200,
@@ -103,4 +147,38 @@ func Scan(path, projectKey, token string) error {
 		return err
 	}
 	return nil
+}
+
+func ParseIssue(input map[string]interface{}) (output []Isu) {
+	output = make([]Isu, 0)
+	for _, issue := range input["issues"].([]interface{}) {
+		issueMap := issue.(map[string]interface{})
+		var isu Isu
+		isu.Type = issueMap["type"].(string)
+		isu.File = issueMap["component"].(string)
+		isu.StartLine = int(issueMap["textRange"].(map[string]interface{})["startLine"].(float64))
+		isu.EndLine = int(issueMap["textRange"].(map[string]interface{})["endLine"].(float64))
+		isu.StartOffset = int(issueMap["textRange"].(map[string]interface{})["startOffset"].(float64))
+		isu.EndOffset = int(issueMap["textRange"].(map[string]interface{})["endOffset"].(float64))
+		isu.Message = issueMap["message"].(string)
+		output = append(output, isu)
+	}
+	return
+}
+
+func PaserHotspot(input map[string]interface{}) (output []Isu) {
+	output = make([]Isu, 0)
+	for _, hotspot := range input["hotspots"].([]interface{}) {
+		hotspotMap := hotspot.(map[string]interface{})
+		var isu Isu
+		isu.Type = "HOTSPOT"
+		isu.File = hotspotMap["component"].(string)
+		isu.StartLine = int(hotspotMap["textRange"].(map[string]interface{})["startLine"].(float64))
+		isu.EndLine = int(hotspotMap["textRange"].(map[string]interface{})["endLine"].(float64))
+		isu.StartOffset = int(hotspotMap["textRange"].(map[string]interface{})["startOffset"].(float64))
+		isu.EndOffset = int(hotspotMap["textRange"].(map[string]interface{})["endOffset"].(float64))
+		isu.Message = hotspotMap["message"].(string)
+		output = append(output, isu)
+	}
+	return
 }
