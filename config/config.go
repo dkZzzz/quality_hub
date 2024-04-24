@@ -48,7 +48,7 @@ func init() {
 
 func LoadConfig() (*Config, error) {
 	config := &Config{}
-	file, err := os.Open("../../config.json")
+	file, err := os.Open("config.json")
 
 	if err != nil {
 		return config, err

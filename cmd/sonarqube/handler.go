@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/dkZzzz/quality_hub/config"
 	"github.com/dkZzzz/quality_hub/db/mysql"
@@ -14,6 +16,8 @@ import (
 	"github.com/dkZzzz/quality_hub/pkg/sonarapi"
 	"github.com/dkZzzz/quality_hub/proto/sonarqubepb"
 )
+
+var wg sync.WaitGroup
 
 var (
 	token_error          = "token验证失败"
@@ -59,16 +63,18 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 	}
 
 	// 在本地库创建记录
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		mysql.CreateProject(ctx, in.Username, in.ProjectName, in.BranchName, in.Url, in.Token)
 	}()
+	wg.Wait()
 
 	// 处理url
 	tmp := strings.Split(in.Url, "/")
 	pName := tmp[len(tmp)-1]
 	pName = pName[:len(pName)-4]
 	path := config.Cfg.CodeStorePath + pName
-
 	// 克隆代码
 	err = clone.Clone(in.Url, pName)
 	if err != nil {
@@ -96,6 +102,9 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 		}, nil
 	}
 
+	// 等待3s
+	time.Sleep(3 * time.Second)
+
 	// 获取issue到本地库
 	response, err := sonarapi.GetIssueByProject(in.ProjectName)
 	if err != nil {
@@ -105,12 +114,15 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 		}, nil
 	}
 
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		Isus := ParseIssue(response)
 		for _, isu := range Isus {
 			mysql.CreateIssue(ctx, in.ProjectName, isu.Type, isu.File, isu.StartLine, isu.EndLine, isu.StartOffset, isu.EndOffset, isu.Message)
 		}
 	}()
+	wg.Wait()
 
 	// 获取hotspot到本地库
 	response, err = sonarapi.GetHotspotByProject(in.ProjectName)
@@ -121,12 +133,15 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 		}, nil
 	}
 
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		Isus := PaserHotspot(response)
 		for _, isu := range Isus {
 			mysql.CreateIssue(ctx, in.ProjectName, isu.Type, isu.File, isu.StartLine, isu.EndLine, isu.StartOffset, isu.EndOffset, isu.Message)
 		}
 	}()
+	wg.Wait()
 
 	return &sonarqubepb.CreateProjectResp{
 		Code:    200,
@@ -155,7 +170,7 @@ func ParseIssue(input map[string]interface{}) (output []Isu) {
 		issueMap := issue.(map[string]interface{})
 		var isu Isu
 		isu.Type = issueMap["type"].(string)
-		isu.File = issueMap["component"].(string)
+		isu.File = strings.Split(issueMap["component"].(string), ":")[1]
 		isu.StartLine = int(issueMap["textRange"].(map[string]interface{})["startLine"].(float64))
 		isu.EndLine = int(issueMap["textRange"].(map[string]interface{})["endLine"].(float64))
 		isu.StartOffset = int(issueMap["textRange"].(map[string]interface{})["startOffset"].(float64))
@@ -172,7 +187,7 @@ func PaserHotspot(input map[string]interface{}) (output []Isu) {
 		hotspotMap := hotspot.(map[string]interface{})
 		var isu Isu
 		isu.Type = "HOTSPOT"
-		isu.File = hotspotMap["component"].(string)
+		isu.File = strings.Split(hotspotMap["component"].(string), ":")[1]
 		isu.StartLine = int(hotspotMap["textRange"].(map[string]interface{})["startLine"].(float64))
 		isu.EndLine = int(hotspotMap["textRange"].(map[string]interface{})["endLine"].(float64))
 		isu.StartOffset = int(hotspotMap["textRange"].(map[string]interface{})["startOffset"].(float64))
