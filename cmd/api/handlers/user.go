@@ -9,6 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	param_error             = "参数错误"
+	service_discovery_error = "服务发现失败"
+)
+
 func toResponse(rsp *userpb.Resp) (int, gin.H) {
 	if rsp.Token != nil {
 		return int(rsp.Code), gin.H{
@@ -30,7 +35,7 @@ func Login(c *gin.Context) {
 	var param LoginParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg":   "参数错误",
+			"msg":   param_error,
 			"error": err.Error(),
 		})
 		return
@@ -39,7 +44,7 @@ func Login(c *gin.Context) {
 	ok, err := etcd.Get("user")
 	if !ok || err != nil {
 		c.JSON(500, gin.H{
-			"msg": "服务发现失败",
+			"msg": service_discovery_error,
 		})
 		return
 	}
@@ -58,7 +63,7 @@ func Register(c *gin.Context) {
 	var param RegisterParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg":   "参数错误",
+			"msg":   param_error,
 			"error": err.Error(),
 		})
 		return
@@ -68,7 +73,7 @@ func Register(c *gin.Context) {
 	ok, err := etcd.Get("user")
 	if !ok || err != nil {
 		c.JSON(500, gin.H{
-			"msg": "服务发现失败",
+			"msg": service_discovery_error,
 		})
 		return
 	}
@@ -87,7 +92,7 @@ func Logout(c *gin.Context) {
 	var param LogoutParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg":   "参数错误",
+			"msg":   param_error,
 			"error": err.Error(),
 		})
 		return
@@ -97,7 +102,7 @@ func Logout(c *gin.Context) {
 	ok, err := etcd.Get("user")
 	if !ok || err != nil {
 		c.JSON(500, gin.H{
-			"msg": "服务发现失败",
+			"msg": service_discovery_error,
 		})
 		return
 	}
@@ -115,7 +120,7 @@ func ModifyUsername(c *gin.Context) {
 	var param ModifyUsernameParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg":   "参数错误",
+			"msg":   param_error,
 			"error": err.Error(),
 		})
 		return
@@ -125,7 +130,7 @@ func ModifyUsername(c *gin.Context) {
 	ok, err := etcd.Get("user")
 	if !ok || err != nil {
 		c.JSON(500, gin.H{
-			"msg": "服务发现失败",
+			"msg": service_discovery_error,
 		})
 		return
 	}
@@ -144,7 +149,7 @@ func ModifyEmail(c *gin.Context) {
 	var param ModifyEmailParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg":   "参数错误",
+			"msg":   param_error,
 			"error": err.Error(),
 		})
 		return
@@ -154,7 +159,7 @@ func ModifyEmail(c *gin.Context) {
 	ok, err := etcd.Get("user")
 	if !ok || err != nil {
 		c.JSON(500, gin.H{
-			"msg": "服务发现失败",
+			"msg": service_discovery_error,
 		})
 		return
 	}
@@ -174,7 +179,7 @@ func ModifyPassword(c *gin.Context) {
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":  400,
-			"msg":   "参数错误",
+			"msg":   param_error,
 			"error": err.Error(),
 		})
 		return
@@ -185,7 +190,7 @@ func ModifyPassword(c *gin.Context) {
 	if !ok || err != nil {
 		c.JSON(500, gin.H{
 			"code": 500,
-			"msg":  "服务发现失败",
+			"msg":  service_discovery_error,
 		})
 		return
 	}
