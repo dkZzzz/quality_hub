@@ -14,7 +14,7 @@ var (
 )
 
 func Init_client() {
-	conn, err := grpc.Dial(config.Cfg.SonarqubeServerHost, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(config.Cfg.ChatServerHost, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}

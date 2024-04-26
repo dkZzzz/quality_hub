@@ -4,6 +4,7 @@ import (
 	"github.com/dkZzzz/quality_hub/cmd/api/router"
 	"github.com/dkZzzz/quality_hub/db/mysql"
 	"github.com/dkZzzz/quality_hub/srv/chatsrv"
+	"github.com/dkZzzz/quality_hub/srv/noticesrv"
 	"github.com/dkZzzz/quality_hub/srv/sonarqubesrv"
 	"github.com/dkZzzz/quality_hub/srv/usersrv"
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,9 @@ func main() {
 
 	go chatsrv.Init_server()
 	go chatsrv.Init_client()
+
+	go noticesrv.Init_server()
+	go noticesrv.Init_client()
 
 	_, err := mysql.InitDB()
 	if err != nil {
