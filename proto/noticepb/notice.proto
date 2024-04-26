@@ -1,0 +1,41 @@
+syntax = "proto3";
+package noticepb;
+option go_package = "./proto/noticepb";
+
+// Advice 结构体
+message Advice {
+    int32 id = 1;
+    int32 issue_id = 2;
+    string project_name = 3;
+    string advice = 4;
+}
+
+message GetSingleAdviceReq {
+    string username = 1;
+    string token = 2;
+    int32 advice_id = 3;
+}
+
+message GetSingleAdviceResp {
+    int32 code = 1;
+    string message = 2;
+    Advice data = 3;
+}
+
+message GetProjectAdviceReq {
+    string username = 1;
+    string token = 2;
+    string project_name = 3; 
+}
+
+message GetProjectAdviceResp {
+    int32 code = 1;
+    string message = 2;
+    repeated Advice data = 3;
+}
+
+// notice 服务
+service Notice {
+    rpc GetSingleAdvice (GetSingleAdviceReq) returns (GetSingleAdviceResp) {}
+    rpc GetProjectAdvice (GetProjectAdviceReq) returns (GetProjectAdviceResp) {}
+}
