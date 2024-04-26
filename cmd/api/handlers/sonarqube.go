@@ -15,16 +15,20 @@ func CreateProject(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg":   "参数错误",
-			"error": err.Error(),
+			"code": 400,
+			"msg":  param_error,
+			"data": nil,
 		})
 		return
 	}
+
 	// etcd服务发现
 	ok, err := etcd.Get("sonarqube")
 	if !ok || err != nil {
 		c.JSON(500, gin.H{
-			"msg": "服务发现失败",
+			"code": 500,
+			"msg":  service_discovery_error,
+			"data": nil,
 		})
 		return
 	}
@@ -36,6 +40,191 @@ func CreateProject(c *gin.Context) {
 		Url:         param.Url,
 		Token:       param.Token,
 	}
-	rpc.CreateProject(&req)
-	c.JSON(http.StatusOK, gin.H{})
+
+	rsp, _ := rpc.CreateProject(&req)
+	c.JSON(int(rsp.Code), gin.H{
+		"code": rsp.Code,
+		"msg":  rsp.Message,
+		"data": rsp.Data,
+	})
+}
+
+func GetProject(c *gin.Context) {
+	var param GetProjectParam
+
+	if err := c.ShouldBindJSON(&param); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code": 400,
+			"msg":  param_error,
+			"data": nil,
+		})
+		return
+	}
+
+	// etcd服务发现
+	ok, err := etcd.Get("sonarqube")
+	if !ok || err != nil {
+		c.JSON(500, gin.H{
+			"code": 500,
+			"msg":  service_discovery_error,
+			"data": nil,
+		})
+		return
+	}
+
+	req := sonarqubepb.GetProjectReq{
+		Username: param.Username,
+		Token:    param.Token,
+	}
+
+	rsp, _ := rpc.GetProject(&req)
+	c.JSON(int(rsp.Code), gin.H{
+		"code": rsp.Code,
+		"msg":  rsp.Message,
+		"data": rsp.Data,
+	})
+}
+
+func GetProjectList(c *gin.Context) {
+	var param GetProjectListParam
+
+	if err := c.ShouldBindJSON(&param); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code": 400,
+			"msg":  param_error,
+			"data": nil,
+		})
+		return
+	}
+
+	// etcd服务发现
+	ok, err := etcd.Get("sonarqube")
+	if !ok || err != nil {
+		c.JSON(500, gin.H{
+			"code": 500,
+			"msg":  service_discovery_error,
+			"data": nil,
+		})
+		return
+	}
+
+	req := sonarqubepb.GetProjectListReq{
+		Username: param.Username,
+		Token:    param.Token,
+	}
+
+	rsp, _ := rpc.GetProjectList(&req)
+	c.JSON(int(rsp.Code), gin.H{
+		"code": rsp.Code,
+		"msg":  rsp.Message,
+		"data": rsp.Data,
+	})
+}
+
+func GetReport(c *gin.Context) {
+	var param GetReportParam
+
+	if err := c.ShouldBindJSON(&param); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code": 400,
+			"msg":  param_error,
+			"data": nil,
+		})
+		return
+	}
+
+	// etcd服务发现
+	ok, err := etcd.Get("sonarqube")
+	if !ok || err != nil {
+		c.JSON(500, gin.H{
+			"code": 500,
+			"msg":  service_discovery_error,
+			"data": nil,
+		})
+		return
+	}
+
+	req := sonarqubepb.GetReportReq{
+		Username: param.Username,
+		Token:    param.Token,
+	}
+
+	rsp, _ := rpc.GetReport(&req)
+	c.JSON(int(rsp.Code), gin.H{
+		"code": rsp.Code,
+		"msg":  rsp.Message,
+		"data": rsp.Data,
+	})
+}
+
+func GetReportList(c *gin.Context) {
+	var param GetReportListParam
+
+	if err := c.ShouldBindJSON(&param); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code": 400,
+			"msg":  param_error,
+			"data": nil,
+		})
+		return
+	}
+
+	// etcd服务发现
+	ok, err := etcd.Get("sonarqube")
+	if !ok || err != nil {
+		c.JSON(500, gin.H{
+			"code": 500,
+			"msg":  service_discovery_error,
+			"data": nil,
+		})
+		return
+	}
+
+	req := sonarqubepb.GetReportListReq{
+		Username: param.Username,
+		Token:    param.Token,
+	}
+
+	rsp, _ := rpc.GetReportList(&req)
+	c.JSON(int(rsp.Code), gin.H{
+		"code": rsp.Code,
+		"msg":  rsp.Message,
+		"data": rsp.Data,
+	})
+}
+
+func GetIssue(c *gin.Context) {
+	var param GetIssueParam
+
+	if err := c.ShouldBindJSON(&param); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code": 400,
+			"msg":  param_error,
+			"data": nil,
+		})
+		return
+	}
+
+	// etcd服务发现
+	ok, err := etcd.Get("sonarqube")
+	if !ok || err != nil {
+		c.JSON(500, gin.H{
+			"code": 500,
+			"msg":  service_discovery_error,
+			"data": nil,
+		})
+		return
+	}
+
+	req := sonarqubepb.GetIssueReq{
+		Username: param.Username,
+		Token:    param.Token,
+	}
+
+	rsp, _ := rpc.GetIssue(&req)
+	c.JSON(int(rsp.Code), gin.H{
+		"code": rsp.Code,
+		"msg":  rsp.Message,
+		"data": rsp.Data,
+	})
 }

@@ -35,8 +35,9 @@ func Login(c *gin.Context) {
 	var param LoginParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg":   param_error,
-			"error": err.Error(),
+			"code": 400,
+			"msg":  param_error,
+			"data": nil,
 		})
 		return
 	}
@@ -44,7 +45,9 @@ func Login(c *gin.Context) {
 	ok, err := etcd.Get("user")
 	if !ok || err != nil {
 		c.JSON(500, gin.H{
-			"msg": service_discovery_error,
+			"code": 500,
+			"msg":  service_discovery_error,
+			"data": nil,
 		})
 		return
 	}
@@ -63,8 +66,9 @@ func Register(c *gin.Context) {
 	var param RegisterParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg":   param_error,
-			"error": err.Error(),
+			"code": 400,
+			"msg":  param_error,
+			"data": nil,
 		})
 		return
 	}
@@ -73,7 +77,9 @@ func Register(c *gin.Context) {
 	ok, err := etcd.Get("user")
 	if !ok || err != nil {
 		c.JSON(500, gin.H{
-			"msg": service_discovery_error,
+			"code": 500,
+			"msg":  service_discovery_error,
+			"data": nil,
 		})
 		return
 	}
@@ -92,8 +98,9 @@ func Logout(c *gin.Context) {
 	var param LogoutParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg":   param_error,
-			"error": err.Error(),
+			"code": 400,
+			"msg":  param_error,
+			"data": nil,
 		})
 		return
 	}
@@ -102,7 +109,9 @@ func Logout(c *gin.Context) {
 	ok, err := etcd.Get("user")
 	if !ok || err != nil {
 		c.JSON(500, gin.H{
-			"msg": service_discovery_error,
+			"code": 500,
+			"msg":  service_discovery_error,
+			"data": nil,
 		})
 		return
 	}
@@ -120,8 +129,9 @@ func ModifyUsername(c *gin.Context) {
 	var param ModifyUsernameParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg":   param_error,
-			"error": err.Error(),
+			"code": 400,
+			"msg":  param_error,
+			"data": nil,
 		})
 		return
 	}
@@ -130,7 +140,9 @@ func ModifyUsername(c *gin.Context) {
 	ok, err := etcd.Get("user")
 	if !ok || err != nil {
 		c.JSON(500, gin.H{
-			"msg": service_discovery_error,
+			"code": 500,
+			"msg":  service_discovery_error,
+			"data": nil,
 		})
 		return
 	}
@@ -149,8 +161,9 @@ func ModifyEmail(c *gin.Context) {
 	var param ModifyEmailParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg":   param_error,
-			"error": err.Error(),
+			"code": 400,
+			"msg":  param_error,
+			"data": nil,
 		})
 		return
 	}
@@ -159,7 +172,9 @@ func ModifyEmail(c *gin.Context) {
 	ok, err := etcd.Get("user")
 	if !ok || err != nil {
 		c.JSON(500, gin.H{
-			"msg": service_discovery_error,
+			"code": 500,
+			"msg":  service_discovery_error,
+			"data": nil,
 		})
 		return
 	}
@@ -178,9 +193,9 @@ func ModifyPassword(c *gin.Context) {
 	var param ModifyPasswordParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"code":  400,
-			"msg":   param_error,
-			"error": err.Error(),
+			"code": 400,
+			"msg":  param_error,
+			"data": nil,
 		})
 		return
 	}
@@ -191,6 +206,7 @@ func ModifyPassword(c *gin.Context) {
 		c.JSON(500, gin.H{
 			"code": 500,
 			"msg":  service_discovery_error,
+			"data": nil,
 		})
 		return
 	}

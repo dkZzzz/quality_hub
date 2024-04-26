@@ -2,12 +2,40 @@ syntax = "proto3";
 package sonarqubepb;
 option go_package = "./proto/sonarqubepb";
 
+// project 结构
 message Project {
-    string name = 1;
-    string branch = 2;
-    string url = 3;
+    int32 id = 1;
+    string project_name = 2;
+    string username = 3;
+    string branch_name = 4;
+    string url = 5;
 }
 
+// report 结构
+message Report {
+    int32 id = 1;
+    string project_name = 2;
+    int32 issue_num = 3;
+    int32 hotspot_num = 4;
+    string duplication = 5;
+    string coverage = 6;
+}
+
+// issue 结构
+message Issue {
+    int32 id = 1;
+    string project_name = 2;
+    string type = 3;
+    string file = 4;
+    int32 start_line = 5;
+    int32 end_line = 6;
+    int32 start_offset = 7;
+    int32 end_offset = 8;
+    string message = 9;
+}
+
+
+// 获取project
 message GetProjectReq {
     string username = 1;
     string project_name = 2;
@@ -15,17 +43,26 @@ message GetProjectReq {
     string token = 4;
 }
 
-message GetProjectsReq {
-    string username = 1;
-    string token = 2;
-}
-
-message ProjectResp {
-    repeated Project projects = 1;
-    string code = 2;
+message GetProjectResp {
+    Project data = 1;
+    int32 code = 2;
     string message = 3;
 }
 
+// 获取project list
+message GetProjectListReq {
+    string username = 1;
+    string token = 2;
+    int32 project_id = 3;
+}
+
+message GetProjectListResp {
+    repeated Project data = 1;
+    int32 code = 2;
+    string message = 3;
+}
+
+// 创建project
 message CreateProjectReq {
     string username = 1;
     string project_name = 2;
@@ -37,10 +74,53 @@ message CreateProjectReq {
 message CreateProjectResp {
     int32 code = 1;
     string message = 2;
+    Project data = 3;
 }
 
+// 获取report
+message GetReportReq {
+    string username = 1;
+    int32 report_id = 2;
+    string token = 3;
+}
+
+message GetReportResp {
+    Report data = 1;
+    int32 code = 2;
+    string message = 3;
+}
+
+// 获取report list
+message GetReportListReq {
+    string username = 1;
+    string token = 2;
+}
+
+message GetReportListResp {
+    repeated Report data = 1;
+    int32 code = 2;
+    string message = 3;
+}
+
+// 获取issue
+message GetIssueReq {
+    string username = 1;
+    string project_name = 2;
+    string token = 3;
+}
+
+message GetIssueResp {
+    repeated Issue data = 1;
+    int32 code = 2;
+    string message = 3;
+}
+
+// sonarqube 服务
 service SonarQube {
-    rpc GetProject(GetProjectReq) returns (ProjectResp) {}
-    rpc GetProjects(GetProjectsReq) returns (ProjectResp) {}
     rpc CreateProject(CreateProjectReq) returns (CreateProjectResp) {}
+    rpc GetProject(GetProjectReq) returns (GetProjectResp) {}
+    rpc GetProjectList(GetProjectListReq) returns (GetProjectListResp) {}
+    rpc GetReport(GetReportReq) returns (GetReportResp) {}
+    rpc GetReportList(GetReportListReq) returns (GetReportListResp) {}
+    rpc GetIssue(GetIssueReq) returns (GetIssueResp) {}
 }

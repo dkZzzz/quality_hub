@@ -27,5 +27,16 @@ func RegisterRoutes(r *gin.Engine) {
 	sonarqube := r.Group("/sonarqube")
 	{
 		sonarqube.POST("/create_project", handlers.CreateProject)
+
+		sonarqube.POST("/get_project", handlers.GetProject)
+
+		sonarqube.POST("/get_project_list", handlers.GetProjectList)
+
+		sonarqube.POST("/get_report", handlers.GetReport)
+
+		sonarqube.POST("/get_report_list", handlers.GetReportList)
+
+		sonarqube.POST("/get_issue", handlers.GetIssue)
+
 	}
 }

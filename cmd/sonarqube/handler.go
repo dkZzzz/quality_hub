@@ -20,16 +20,25 @@ import (
 var wg sync.WaitGroup
 
 var (
-	token_error           = "token验证失败"
-	create_project_error  = "创建项目失败"
-	create_token_error    = "创建项目token失败"
-	scanning_error        = "扫描代码失败"
-	get_issue_error       = "获取issue失败"
-	get_hotspot_error     = "获取hotspot失败"
-	get_duplication_error = "获取重复度失败"
-	get_coverage_error    = "获取测试覆盖率失败"
+	token_error            = "token验证失败"
+	create_project_error   = "创建项目失败"
+	create_token_error     = "创建项目token失败"
+	scanning_error         = "扫描代码失败"
+	get_issue_error        = "获取issue失败"
+	get_hotspot_error      = "获取hotspot失败"
+	get_duplication_error  = "获取重复度失败"
+	get_coverage_error     = "获取测试覆盖率失败"
+	get_project_error      = "获取项目失败"
+	get_report_error       = "获取报告失败"
+	get_project_list_error = "获取项目列表失败"
+	get_report_list_error  = "获取报告列表失败"
 
-	create_project_succ = "创建项目成功"
+	get_issue_succ        = "获取issue成功"
+	create_project_succ   = "创建项目成功"
+	get_project_succ      = "获取项目成功"
+	get_report_succ       = "获取报告成功"
+	get_project_list_succ = "获取项目列表成功"
+	get_report_list_succ  = "获取报告列表成功"
 )
 
 // rpc服务具体接口业务逻辑
@@ -53,6 +62,7 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 		return &sonarqubepb.CreateProjectResp{
 			Code:    401,
 			Message: token_error,
+			Data:    nil,
 		}, nil
 	}
 
@@ -62,14 +72,17 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 		return &sonarqubepb.CreateProjectResp{
 			Code:    500,
 			Message: create_project_error,
+			Data:    nil,
 		}, nil
 	}
 
 	// 在本地库创建记录
+	var project mysql.Project
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		mysql.CreateProject(ctx, in.Username, in.ProjectName, in.BranchName, in.Url, in.Token)
+		project, _ = mysql.CreateProject(ctx, in.Username, in.ProjectName, in.BranchName, in.Url, in.Token)
 	}()
 	wg.Wait()
 
@@ -84,6 +97,7 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 		return &sonarqubepb.CreateProjectResp{
 			Code:    500,
 			Message: create_project_error,
+			Data:    nil,
 		}, nil
 	}
 
@@ -93,6 +107,7 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 		return &sonarqubepb.CreateProjectResp{
 			Code:    500,
 			Message: create_token_error,
+			Data:    nil,
 		}, nil
 	}
 
@@ -102,6 +117,7 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 		return &sonarqubepb.CreateProjectResp{
 			Code:    500,
 			Message: scanning_error,
+			Data:    nil,
 		}, nil
 	}
 
@@ -114,6 +130,7 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 		return &sonarqubepb.CreateProjectResp{
 			Code:    500,
 			Message: get_issue_error,
+			Data:    nil,
 		}, nil
 	}
 	issueCnt := int(response["total"].(float64))
@@ -134,6 +151,7 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 		return &sonarqubepb.CreateProjectResp{
 			Code:    500,
 			Message: get_hotspot_error,
+			Data:    nil,
 		}, nil
 	}
 
@@ -175,9 +193,195 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 	}()
 	wg.Wait()
 
+	data := &sonarqubepb.Project{
+		Id:          int32(project.ID),
+		ProjectName: project.ProjectName,
+		BranchName:  project.BranchName,
+		Url:         project.Url,
+	}
+
 	return &sonarqubepb.CreateProjectResp{
 		Code:    200,
 		Message: create_project_succ,
+		Data:    data,
+	}, nil
+}
+
+func (s *SonarQubeServerImpl) GetProject(ctx context.Context, in *sonarqubepb.GetProjectReq) (*sonarqubepb.GetProjectResp, error) {
+	if !redis.JWTMatch(ctx, in.Username, in.Token) {
+		return &sonarqubepb.GetProjectResp{
+			Code:    401,
+			Message: token_error,
+			Data:    nil,
+		}, nil
+	}
+
+	project, err := mysql.GetProject(ctx, in.ProjectName)
+	if err != nil {
+		return &sonarqubepb.GetProjectResp{
+			Code:    500,
+			Message: get_project_error,
+			Data:    nil,
+		}, nil
+	}
+
+	data := &sonarqubepb.Project{
+		Id:          int32(project.ID),
+		ProjectName: project.ProjectName,
+		BranchName:  project.BranchName,
+		Url:         project.Url,
+	}
+
+	return &sonarqubepb.GetProjectResp{
+		Code:    200,
+		Message: get_project_succ,
+		Data:    data,
+	}, nil
+}
+
+func (s *SonarQubeServerImpl) GetProjectList(ctx context.Context, in *sonarqubepb.GetProjectListReq) (*sonarqubepb.GetProjectListResp, error) {
+	if !redis.JWTMatch(ctx, in.Username, in.Token) {
+		return &sonarqubepb.GetProjectListResp{
+			Code:    401,
+			Message: token_error,
+			Data:    nil,
+		}, nil
+	}
+
+	projects, err := mysql.GetProjectList(ctx, in.Username)
+	if err != nil {
+		return &sonarqubepb.GetProjectListResp{
+			Code:    500,
+			Message: get_project_list_error,
+			Data:    nil,
+		}, nil
+	}
+	var data []*sonarqubepb.Project
+	for _, p := range projects {
+		project := &sonarqubepb.Project{
+			Id:          int32(p.ID),
+			ProjectName: p.ProjectName,
+			BranchName:  p.BranchName,
+			Url:         p.Url,
+		}
+		data = append(data, project)
+	}
+
+	return &sonarqubepb.GetProjectListResp{
+		Code:    200,
+		Message: get_project_list_succ,
+		Data:    data,
+	}, nil
+}
+
+func (s *SonarQubeServerImpl) GetReport(ctx context.Context, in *sonarqubepb.GetReportReq) (*sonarqubepb.GetReportResp, error) {
+	if !redis.JWTMatch(ctx, in.Username, in.Token) {
+		return &sonarqubepb.GetReportResp{
+			Code:    401,
+			Message: token_error,
+			Data:    nil,
+		}, nil
+	}
+
+	report, err := mysql.GetReport(ctx, int(in.ReportId))
+	if err != nil {
+		return &sonarqubepb.GetReportResp{
+			Code:    500,
+			Message: get_report_error,
+			Data:    nil,
+		}, nil
+	}
+
+	data := &sonarqubepb.Report{
+		Id:          int32(report.ID),
+		ProjectName: report.ProjectName,
+		IssueNum:    int32(report.IssueNum),
+		HotspotNum:  int32(report.HotspotNum),
+		Duplication: report.Duplication,
+		Coverage:    report.Coverage,
+	}
+
+	return &sonarqubepb.GetReportResp{
+		Code:    200,
+		Message: get_report_succ,
+		Data:    data,
+	}, nil
+}
+
+func (s *SonarQubeServerImpl) GetReportList(ctx context.Context, in *sonarqubepb.GetReportListReq) (*sonarqubepb.GetReportListResp, error) {
+	if !redis.JWTMatch(ctx, in.Username, in.Token) {
+		return &sonarqubepb.GetReportListResp{
+			Code:    401,
+			Message: token_error,
+			Data:    nil,
+		}, nil
+	}
+
+	reports, err := mysql.GetReportList(ctx, in.Username)
+	if err != nil {
+		return &sonarqubepb.GetReportListResp{
+			Code:    500,
+			Message: get_report_list_error,
+			Data:    nil,
+		}, nil
+	}
+
+	var data []*sonarqubepb.Report
+	for _, r := range reports {
+		report := &sonarqubepb.Report{
+			Id:          int32(r.ID),
+			ProjectName: r.ProjectName,
+			IssueNum:    int32(r.IssueNum),
+			HotspotNum:  int32(r.HotspotNum),
+			Duplication: r.Duplication,
+			Coverage:    r.Coverage,
+		}
+		data = append(data, report)
+	}
+
+	return &sonarqubepb.GetReportListResp{
+		Code:    200,
+		Message: get_report_list_succ,
+		Data:    data,
+	}, nil
+}
+
+func (s *SonarQubeServerImpl) GetIssue(ctx context.Context, in *sonarqubepb.GetIssueReq) (*sonarqubepb.GetIssueResp, error) {
+	if !redis.JWTMatch(ctx, in.Username, in.Token) {
+		return &sonarqubepb.GetIssueResp{
+			Code:    401,
+			Message: token_error,
+			Data:    nil,
+		}, nil
+	}
+
+	issues, err := mysql.GetIssue(ctx, in.ProjectName)
+	if err != nil {
+		return &sonarqubepb.GetIssueResp{
+			Code:    500,
+			Message: get_issue_error,
+			Data:    nil,
+		}, nil
+	}
+
+	var data []*sonarqubepb.Issue
+	for _, i := range issues {
+		issue := &sonarqubepb.Issue{
+			Type:        i.Type,
+			File:        i.File,
+			StartLine:   int32(i.StartLine),
+			EndLine:     int32(i.EndLine),
+			StartOffset: int32(i.StartOffset),
+			EndOffset:   int32(i.EndOffset),
+			Message:     i.Message,
+		}
+		data = append(data, issue)
+	}
+
+	return &sonarqubepb.GetIssueResp{
+		Code:    200,
+		Message: get_issue_succ,
+		Data:    data,
 	}, nil
 }
 

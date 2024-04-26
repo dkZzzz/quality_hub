@@ -2,14 +2,7 @@ package mysql
 
 import (
 	"context"
-	"crypto/rand"
-	"crypto/subtle"
-	"encoding/base64"
 	"errors"
-	"fmt"
-	"strings"
-
-	"golang.org/x/crypto/argon2"
 )
 
 type Argon2Params struct {
@@ -120,30 +113,30 @@ func ModifyEmail(ctx context.Context, username, newEmail string) error {
 }
 
 // sonarqube模块创建项目
-func CreateProject(ctx context.Context, username, projectName, branchName, url, token string) error {
+func CreateProject(ctx context.Context, username, projectName, branchName, url, token string) (Project, error) {
 	var user User
+	var project Project
 	err := DB.WithContext(ctx).Where("username = ?", username).Find(&user).Error
 	if err != nil {
-		return err
+		return project, err
 	}
 	if user.ID == 0 {
-		return errors.New("user does not exist")
+		return Project{}, errors.New("user does not exist")
 	}
 
-	var project Project
 	err = DB.WithContext(ctx).Where("project_name = ?", projectName).Find(&project).Error
 	if err != nil {
-		return err
+		return project, err
 	}
 	if project.ID != 0 {
-		return errors.New("project already exists")
+		return project, errors.New("project already exists")
 	}
 
 	err = DB.WithContext(ctx).Create(&Project{ProjectName: projectName, Username: username, BranchName: branchName, Url: url}).Error
 	if err != nil {
-		return err
+		return project, err
 	}
-	return nil
+	return project, nil
 }
 
 // sonarqube模块创建issue
@@ -164,81 +157,52 @@ func CreateReport(ctx context.Context, ProjectName string, issueCnt, hotspotCnt 
 	return nil
 }
 
-// 加密密码
-func generateFromPassword(password string, argon2Params *Argon2Params) (encodedHash string, err error) {
-	salt, err := generateRandomBytes(argon2Params.SaltLength)
-	if err != nil {
-		return "", err
-	}
-
-	hash := argon2.IDKey([]byte(password), salt, argon2Params.Iterations, argon2Params.Memory, argon2Params.Parallelism, argon2Params.KeyLength)
-
-	base64Salt := base64.RawStdEncoding.EncodeToString(salt)
-	base64Hash := base64.RawStdEncoding.EncodeToString(hash)
-
-	encodedHash = fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, argon2Params.Memory, argon2Params.Iterations, argon2Params.Parallelism, base64Salt, base64Hash)
-
-	return encodedHash, nil
-}
-
-// 生成随机字节
-func generateRandomBytes(saltLength uint32) ([]byte, error) {
-	buf := make([]byte, saltLength)
-	_, err := rand.Read(buf)
+// sonarqube模块获取项目列表
+func GetProjectList(ctx context.Context, username string) ([]Project, error) {
+	var projects []Project
+	err := DB.WithContext(ctx).Where("username = ?", username).Find(&projects).Error
 	if err != nil {
 		return nil, err
 	}
-
-	return buf, nil
+	return projects, nil
 }
 
-// 比较密码和哈希
-func comparePasswordAndHash(password, encodedHash string) (match bool, err error) {
-	argon2Params, salt, hash, err := decodeHash(encodedHash)
+// sonarqube模块获取项目
+func GetProject(ctx context.Context, projectName string) (*Project, error) {
+	var project Project
+	err := DB.WithContext(ctx).Where("project_name = ?", projectName).Find(&project).Error
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-
-	inputHash := argon2.IDKey([]byte(password), salt, argon2Params.Iterations, argon2Params.Memory, argon2Params.Parallelism, argon2Params.KeyLength)
-
-	if subtle.ConstantTimeCompare(hash, inputHash) == 1 {
-		return true, nil
-	}
-	return false, nil
+	return &project, nil
 }
 
-// 解码哈希
-func decodeHash(encodedHash string) (argon2Params *Argon2Params, salt, hash []byte, err error) {
-	vals := strings.Split(encodedHash, "$")
-	if len(vals) != 6 {
-		return nil, nil, nil, fmt.Errorf("invalid hash format")
-	}
-
-	var version int
-	_, err = fmt.Sscanf(vals[2], "v=%d", &version)
+// sonarqube模块获取报告列表
+func GetReportList(ctx context.Context, projectName string) ([]Report, error) {
+	var reports []Report
+	err := DB.WithContext(ctx).Where("project_name = ?", projectName).Find(&reports).Error
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, err
 	}
-	if version != argon2.Version {
-		return nil, nil, nil, fmt.Errorf("incompatible hash version")
-	}
+	return reports, nil
+}
 
-	argon2Params = &Argon2Params{}
-	if _, err := fmt.Sscanf(vals[3], "m=%d,t=%d,p=%d", &argon2Params.Memory, &argon2Params.Iterations, &argon2Params.Parallelism); err != nil {
-		return nil, nil, nil, err
-	}
-
-	salt, err = base64.RawStdEncoding.Strict().DecodeString(vals[4])
+// sonarqube模块获取报告
+func GetReport(ctx context.Context, reportID int) (*Report, error) {
+	var report Report
+	err := DB.WithContext(ctx).Where("id = ?", reportID).Find(&report).Error
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, err
 	}
-	argon2Params.SaltLength = uint32(len(salt))
+	return &report, nil
+}
 
-	hash, err = base64.RawStdEncoding.Strict().DecodeString(vals[5])
+// sonarqube模块获取issue
+func GetIssue(ctx context.Context, projectName string) ([]Issue, error) {
+	var issues []Issue
+	err := DB.WithContext(ctx).Where("project_name = ?", projectName).Find(&issues).Error
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, err
 	}
-	argon2Params.KeyLength = uint32(len(hash))
-
-	return argon2Params, salt, hash, nil
+	return issues, nil
 }

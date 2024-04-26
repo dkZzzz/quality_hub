@@ -22,9 +22,12 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SonarQubeClient interface {
-	GetProject(ctx context.Context, in *GetProjectReq, opts ...grpc.CallOption) (*ProjectResp, error)
-	GetProjects(ctx context.Context, in *GetProjectsReq, opts ...grpc.CallOption) (*ProjectResp, error)
 	CreateProject(ctx context.Context, in *CreateProjectReq, opts ...grpc.CallOption) (*CreateProjectResp, error)
+	GetProject(ctx context.Context, in *GetProjectReq, opts ...grpc.CallOption) (*GetProjectResp, error)
+	GetProjectList(ctx context.Context, in *GetProjectListReq, opts ...grpc.CallOption) (*GetProjectListResp, error)
+	GetReport(ctx context.Context, in *GetReportReq, opts ...grpc.CallOption) (*GetReportResp, error)
+	GetReportList(ctx context.Context, in *GetReportListReq, opts ...grpc.CallOption) (*GetReportListResp, error)
+	GetIssue(ctx context.Context, in *GetIssueReq, opts ...grpc.CallOption) (*GetIssueResp, error)
 }
 
 type sonarQubeClient struct {
@@ -33,24 +36,6 @@ type sonarQubeClient struct {
 
 func NewSonarQubeClient(cc grpc.ClientConnInterface) SonarQubeClient {
 	return &sonarQubeClient{cc}
-}
-
-func (c *sonarQubeClient) GetProject(ctx context.Context, in *GetProjectReq, opts ...grpc.CallOption) (*ProjectResp, error) {
-	out := new(ProjectResp)
-	err := c.cc.Invoke(ctx, "/sonarqubepb.SonarQube/GetProject", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *sonarQubeClient) GetProjects(ctx context.Context, in *GetProjectsReq, opts ...grpc.CallOption) (*ProjectResp, error) {
-	out := new(ProjectResp)
-	err := c.cc.Invoke(ctx, "/sonarqubepb.SonarQube/GetProjects", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *sonarQubeClient) CreateProject(ctx context.Context, in *CreateProjectReq, opts ...grpc.CallOption) (*CreateProjectResp, error) {
@@ -62,13 +47,61 @@ func (c *sonarQubeClient) CreateProject(ctx context.Context, in *CreateProjectRe
 	return out, nil
 }
 
+func (c *sonarQubeClient) GetProject(ctx context.Context, in *GetProjectReq, opts ...grpc.CallOption) (*GetProjectResp, error) {
+	out := new(GetProjectResp)
+	err := c.cc.Invoke(ctx, "/sonarqubepb.SonarQube/GetProject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *sonarQubeClient) GetProjectList(ctx context.Context, in *GetProjectListReq, opts ...grpc.CallOption) (*GetProjectListResp, error) {
+	out := new(GetProjectListResp)
+	err := c.cc.Invoke(ctx, "/sonarqubepb.SonarQube/GetProjectList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *sonarQubeClient) GetReport(ctx context.Context, in *GetReportReq, opts ...grpc.CallOption) (*GetReportResp, error) {
+	out := new(GetReportResp)
+	err := c.cc.Invoke(ctx, "/sonarqubepb.SonarQube/GetReport", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *sonarQubeClient) GetReportList(ctx context.Context, in *GetReportListReq, opts ...grpc.CallOption) (*GetReportListResp, error) {
+	out := new(GetReportListResp)
+	err := c.cc.Invoke(ctx, "/sonarqubepb.SonarQube/GetReportList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *sonarQubeClient) GetIssue(ctx context.Context, in *GetIssueReq, opts ...grpc.CallOption) (*GetIssueResp, error) {
+	out := new(GetIssueResp)
+	err := c.cc.Invoke(ctx, "/sonarqubepb.SonarQube/GetIssue", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SonarQubeServer is the server API for SonarQube service.
 // All implementations must embed UnimplementedSonarQubeServer
 // for forward compatibility
 type SonarQubeServer interface {
-	GetProject(context.Context, *GetProjectReq) (*ProjectResp, error)
-	GetProjects(context.Context, *GetProjectsReq) (*ProjectResp, error)
 	CreateProject(context.Context, *CreateProjectReq) (*CreateProjectResp, error)
+	GetProject(context.Context, *GetProjectReq) (*GetProjectResp, error)
+	GetProjectList(context.Context, *GetProjectListReq) (*GetProjectListResp, error)
+	GetReport(context.Context, *GetReportReq) (*GetReportResp, error)
+	GetReportList(context.Context, *GetReportListReq) (*GetReportListResp, error)
+	GetIssue(context.Context, *GetIssueReq) (*GetIssueResp, error)
 	mustEmbedUnimplementedSonarQubeServer()
 }
 
@@ -76,14 +109,23 @@ type SonarQubeServer interface {
 type UnimplementedSonarQubeServer struct {
 }
 
-func (UnimplementedSonarQubeServer) GetProject(context.Context, *GetProjectReq) (*ProjectResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetProject not implemented")
-}
-func (UnimplementedSonarQubeServer) GetProjects(context.Context, *GetProjectsReq) (*ProjectResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetProjects not implemented")
-}
 func (UnimplementedSonarQubeServer) CreateProject(context.Context, *CreateProjectReq) (*CreateProjectResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateProject not implemented")
+}
+func (UnimplementedSonarQubeServer) GetProject(context.Context, *GetProjectReq) (*GetProjectResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProject not implemented")
+}
+func (UnimplementedSonarQubeServer) GetProjectList(context.Context, *GetProjectListReq) (*GetProjectListResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProjectList not implemented")
+}
+func (UnimplementedSonarQubeServer) GetReport(context.Context, *GetReportReq) (*GetReportResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReport not implemented")
+}
+func (UnimplementedSonarQubeServer) GetReportList(context.Context, *GetReportListReq) (*GetReportListResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReportList not implemented")
+}
+func (UnimplementedSonarQubeServer) GetIssue(context.Context, *GetIssueReq) (*GetIssueResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetIssue not implemented")
 }
 func (UnimplementedSonarQubeServer) mustEmbedUnimplementedSonarQubeServer() {}
 
@@ -96,42 +138,6 @@ type UnsafeSonarQubeServer interface {
 
 func RegisterSonarQubeServer(s grpc.ServiceRegistrar, srv SonarQubeServer) {
 	s.RegisterService(&SonarQube_ServiceDesc, srv)
-}
-
-func _SonarQube_GetProject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetProjectReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SonarQubeServer).GetProject(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/sonarqubepb.SonarQube/GetProject",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SonarQubeServer).GetProject(ctx, req.(*GetProjectReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _SonarQube_GetProjects_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetProjectsReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SonarQubeServer).GetProjects(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/sonarqubepb.SonarQube/GetProjects",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SonarQubeServer).GetProjects(ctx, req.(*GetProjectsReq))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _SonarQube_CreateProject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -152,6 +158,96 @@ func _SonarQube_CreateProject_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SonarQube_GetProject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProjectReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SonarQubeServer).GetProject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sonarqubepb.SonarQube/GetProject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SonarQubeServer).GetProject(ctx, req.(*GetProjectReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SonarQube_GetProjectList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProjectListReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SonarQubeServer).GetProjectList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sonarqubepb.SonarQube/GetProjectList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SonarQubeServer).GetProjectList(ctx, req.(*GetProjectListReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SonarQube_GetReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetReportReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SonarQubeServer).GetReport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sonarqubepb.SonarQube/GetReport",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SonarQubeServer).GetReport(ctx, req.(*GetReportReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SonarQube_GetReportList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetReportListReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SonarQubeServer).GetReportList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sonarqubepb.SonarQube/GetReportList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SonarQubeServer).GetReportList(ctx, req.(*GetReportListReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SonarQube_GetIssue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetIssueReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SonarQubeServer).GetIssue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sonarqubepb.SonarQube/GetIssue",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SonarQubeServer).GetIssue(ctx, req.(*GetIssueReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SonarQube_ServiceDesc is the grpc.ServiceDesc for SonarQube service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -160,16 +256,28 @@ var SonarQube_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*SonarQubeServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "CreateProject",
+			Handler:    _SonarQube_CreateProject_Handler,
+		},
+		{
 			MethodName: "GetProject",
 			Handler:    _SonarQube_GetProject_Handler,
 		},
 		{
-			MethodName: "GetProjects",
-			Handler:    _SonarQube_GetProjects_Handler,
+			MethodName: "GetProjectList",
+			Handler:    _SonarQube_GetProjectList_Handler,
 		},
 		{
-			MethodName: "CreateProject",
-			Handler:    _SonarQube_CreateProject_Handler,
+			MethodName: "GetReport",
+			Handler:    _SonarQube_GetReport_Handler,
+		},
+		{
+			MethodName: "GetReportList",
+			Handler:    _SonarQube_GetReportList_Handler,
+		},
+		{
+			MethodName: "GetIssue",
+			Handler:    _SonarQube_GetIssue_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

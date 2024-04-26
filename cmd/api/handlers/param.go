@@ -46,7 +46,29 @@ type CreateProjectParam struct {
 }
 
 type GetProjectParam struct {
+	Username  string `json:"username"`
+	ProjectID string `json:"project_name"`
+	Token     string `json:"token"`
 }
 
-type GetProjectsParam struct {
+type GetProjectListParam struct {
+	Username string `json:"username"`
+	Token    string `json:"token"`
+}
+
+type GetReportParam struct {
+	Username string `json:"username"`
+	ReportID string `json:"report_id"`
+	Token    string `json:"token"`
+}
+
+type GetReportListParam struct {
+	Username string `json:"username"`
+	Token    string `json:"token"`
+}
+
+type GetIssueParam struct {
+	Username    string `json:"username"`
+	ProjectName string `json:"project_name"`
+	Token       string `json:"token"`
 }
