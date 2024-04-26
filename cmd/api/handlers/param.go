@@ -72,3 +72,27 @@ type GetIssueParam struct {
 	ProjectName string `json:"project_name"`
 	Token       string `json:"token"`
 }
+
+type SentSingleIssueParam struct {
+	Username string `json:"username"`
+	Token    string `json:"token"`
+	IssueID  int    `json:"issue_id"`
+}
+
+type SentProjectIssueParam struct {
+	Username    string `json:"username"`
+	Token       string `json:"token"`
+	ProjectName string `json:"project_name"`
+}
+
+type GetSingleAdviceParam struct {
+	Username string `json:"username"`
+	Token    string `json:"token"`
+	AdviceID int    `json:"advice_id"`
+}
+
+type GetProjectAdviceParam struct {
+	Username    string `json:"username"`
+	Token       string `json:"token"`
+	ProjectName string `json:"project_name"`
+}

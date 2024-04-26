@@ -41,7 +41,8 @@ type Issue struct {
 }
 
 type Advice struct {
-	ID      int    `json:"id" gorm:"primary_key"`
-	IssueID int    `json:"issue_id"`
-	Advice  string `json:"advice"`
+	ID          int    `json:"id" gorm:"primary_key"`
+	IssueID     int    `json:"issue_id"`
+	ProjectName string `json:"project_name"`
+	Advice      string `json:"advice"`
 }

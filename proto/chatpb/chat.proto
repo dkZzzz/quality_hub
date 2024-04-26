@@ -1,0 +1,33 @@
+syntax = "proto3";
+package chatpb;
+option go_package = "./proto/chatpb";
+
+message SentSingleIssueReq {
+    string username = 1;
+    string token = 2;
+    string issue_id = 3;
+}
+
+message SentSingleIssueResp {
+    int32 code = 1;
+    string message = 2;
+    map<string, int32> data = 3;
+}
+
+message SentProjectIssueReq {
+    string username = 1;
+    string token = 2;
+    string project_name = 3;
+}
+
+message SentProjectIssueResp {
+    int32 code = 1;
+    string message = 2;
+    map<string, int32> data = 3;
+}
+
+// chat 服务
+service Chat {
+    rpc SentSingleIssue (SentSingleIssueReq) returns (SentSingleIssueResp) {}
+    rpc SentProjectIssue (SentProjectIssueReq) returns (SentProjectIssueResp) {}
+}
