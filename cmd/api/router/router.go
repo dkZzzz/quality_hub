@@ -49,10 +49,10 @@ func RegisterRoutes(r *gin.Engine) {
 	}
 
 	// 通知模块
-	// notice := r.Group("/notice")
+	notice := r.Group("/notice")
 	{
-		// notice.POST("/get_single_advice", handlers.GetSingleAdvice)
+		notice.POST("/get_single_advice", handlers.GetSingleAdvice)
 
-		// notice.POST("/get_project_advice", handlers.GetProjectAdvice)
+		notice.POST("/get_project_advice", handlers.GetProjectAdvice)
 	}
 }
