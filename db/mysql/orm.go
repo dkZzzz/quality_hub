@@ -149,8 +149,8 @@ func CreateIssue(ctx context.Context, ProjectName, Type, File string, StartLine,
 }
 
 // sonarqube模块创建report
-func CreateReport(ctx context.Context, ProjectName string, issueCnt, hotspotCnt int, duplication, coverage string) error {
-	err := DB.WithContext(ctx).Create(&Report{ProjectName: ProjectName, IssueNum: issueCnt, HotspotNum: hotspotCnt, Duplication: duplication, Coverage: coverage}).Error
+func CreateReport(ctx context.Context, Username, ProjectName string, issueCnt, hotspotCnt int, duplication, coverage string) error {
+	err := DB.WithContext(ctx).Create(&Report{Username: Username, ProjectName: ProjectName, IssueNum: issueCnt, HotspotNum: hotspotCnt, Duplication: duplication, Coverage: coverage}).Error
 	if err != nil {
 		return err
 	}
@@ -178,9 +178,9 @@ func GetProject(ctx context.Context, projectName string) (*Project, error) {
 }
 
 // sonarqube模块获取报告列表
-func GetReportList(ctx context.Context, projectName string) ([]Report, error) {
+func GetReportList(ctx context.Context, username string) ([]Report, error) {
 	var reports []Report
-	err := DB.WithContext(ctx).Where("project_name = ?", projectName).Find(&reports).Error
+	err := DB.WithContext(ctx).Where("username = ?", username).Find(&reports).Error
 	if err != nil {
 		return nil, err
 	}

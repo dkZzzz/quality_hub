@@ -22,6 +22,7 @@ var wg sync.WaitGroup
 var (
 	token_error            = "token验证失败"
 	create_project_error   = "创建项目失败"
+	clone_project_error    = "克隆项目失败"
 	create_token_error     = "创建项目token失败"
 	scanning_error         = "扫描代码失败"
 	get_issue_error        = "获取issue失败"
@@ -91,12 +92,13 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 	pName := tmp[len(tmp)-1]
 	pName = pName[:len(pName)-4]
 	path := config.Cfg.CodeStorePath + pName
+
 	// 克隆代码
 	err = clone.Clone(in.Url, pName)
 	if err != nil {
 		return &sonarqubepb.CreateProjectResp{
 			Code:    500,
-			Message: create_project_error,
+			Message: clone_project_error,
 			Data:    nil,
 		}, nil
 	}
@@ -133,7 +135,7 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 			Data:    nil,
 		}, nil
 	}
-	issueCnt := int(response["total"].(float64))
+	issueCnt := int(response["paging"].(map[string]interface{})["total"].(float64))
 
 	wg.Add(1)
 	go func() {
@@ -155,7 +157,7 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 		}, nil
 	}
 
-	hotspotCnt := int(response["total"].(float64))
+	hotspotCnt := int(response["paging"].(map[string]interface{})["total"].(float64))
 
 	wg.Add(1)
 	go func() {
@@ -189,7 +191,7 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		mysql.CreateReport(ctx, in.ProjectName, issueCnt, hotspotCnt, duplication, coverage)
+		mysql.CreateReport(ctx, in.Username, in.ProjectName, issueCnt, hotspotCnt, duplication, coverage)
 	}()
 	wg.Wait()
 

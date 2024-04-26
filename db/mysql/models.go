@@ -20,6 +20,7 @@ type Project struct {
 
 type Report struct {
 	ID          int    `json:"id" gorm:"primary_key"`
+	Username    string `json:"username"`
 	ProjectName string `json:"project_name"`
 	IssueNum    int    `json:"issue_num"`
 	HotspotNum  int    `json:"hotspot_num"`

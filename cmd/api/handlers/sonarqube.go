@@ -73,8 +73,9 @@ func GetProject(c *gin.Context) {
 	}
 
 	req := sonarqubepb.GetProjectReq{
-		Username: param.Username,
-		Token:    param.Token,
+		Username:    param.Username,
+		Token:       param.Token,
+		ProjectName: param.ProjectName,
 	}
 
 	rsp, _ := rpc.GetProject(&req)
@@ -147,6 +148,7 @@ func GetReport(c *gin.Context) {
 	req := sonarqubepb.GetReportReq{
 		Username: param.Username,
 		Token:    param.Token,
+		ReportId: int32(param.ReportID),
 	}
 
 	rsp, _ := rpc.GetReport(&req)
