@@ -22,7 +22,9 @@ type Report struct {
 	ID          int    `json:"id" gorm:"primary_key"`
 	ProjectName string `json:"project_name"`
 	IssueNum    int    `json:"issue_num"`
-	IssueType   string `json:"issue_type"`
+	HotspotNum  int    `json:"hotspot_num"`
+	Duplication string `json:"duplication"`
+	Coverage    string `json:"coverage"`
 }
 
 type Issue struct {

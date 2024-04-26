@@ -20,13 +20,16 @@ import (
 var wg sync.WaitGroup
 
 var (
-	token_error          = "token验证失败"
-	create_project_error = "创建项目失败"
-	create_token_error   = "创建项目token失败"
-	scanning_error       = "扫描代码失败"
-	get_issue_error      = "获取issue失败"
-	get_hotspot_error    = "获取hotspot失败"
-	create_project_succ  = "创建项目成功"
+	token_error           = "token验证失败"
+	create_project_error  = "创建项目失败"
+	create_token_error    = "创建项目token失败"
+	scanning_error        = "扫描代码失败"
+	get_issue_error       = "获取issue失败"
+	get_hotspot_error     = "获取hotspot失败"
+	get_duplication_error = "获取重复度失败"
+	get_coverage_error    = "获取测试覆盖率失败"
+
+	create_project_succ = "创建项目成功"
 )
 
 // rpc服务具体接口业务逻辑
@@ -113,6 +116,7 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 			Message: get_issue_error,
 		}, nil
 	}
+	issueCnt := int(response["total"].(float64))
 
 	wg.Add(1)
 	go func() {
@@ -133,6 +137,8 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 		}, nil
 	}
 
+	hotspotCnt := int(response["total"].(float64))
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -140,6 +146,32 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 		for _, isu := range Isus {
 			mysql.CreateIssue(ctx, in.ProjectName, isu.Type, isu.File, isu.StartLine, isu.EndLine, isu.StartOffset, isu.EndOffset, isu.Message)
 		}
+	}()
+	wg.Wait()
+
+	// 获取重复度
+	duplication, err := sonarapi.GetDuplicationsByProject(in.ProjectName)
+	if err != nil {
+		return &sonarqubepb.CreateProjectResp{
+			Code:    500,
+			Message: get_duplication_error,
+		}, nil
+	}
+
+	// 获取测试覆盖率
+	coverage, err := sonarapi.GetCoverageByProject(in.ProjectName)
+	if err != nil {
+		return &sonarqubepb.CreateProjectResp{
+			Code:    500,
+			Message: get_coverage_error,
+		}, nil
+	}
+
+	// 创建report
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		mysql.CreateReport(ctx, in.ProjectName, issueCnt, hotspotCnt, duplication, coverage)
 	}()
 	wg.Wait()
 

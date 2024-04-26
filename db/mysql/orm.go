@@ -155,6 +155,15 @@ func CreateIssue(ctx context.Context, ProjectName, Type, File string, StartLine,
 	return nil
 }
 
+// sonarqube模块创建report
+func CreateReport(ctx context.Context, ProjectName string, issueCnt, hotspotCnt int, duplication, coverage string) error {
+	err := DB.WithContext(ctx).Create(&Report{ProjectName: ProjectName, IssueNum: issueCnt, HotspotNum: hotspotCnt, Duplication: duplication, Coverage: coverage}).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // 加密密码
 func generateFromPassword(password string, argon2Params *Argon2Params) (encodedHash string, err error) {
 	salt, err := generateRandomBytes(argon2Params.SaltLength)

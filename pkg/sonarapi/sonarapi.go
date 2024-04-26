@@ -85,3 +85,39 @@ func GetHotspotByProject(projectName string) (map[string]interface{}, error) {
 	}
 	return response, nil
 }
+
+func GetDuplicationsByProject(projectName string) (string, error) {
+	url := config.Cfg.SonarHost + "/api/measures/component"
+	username := config.Cfg.SonarUser
+	password := config.Cfg.SonarPassword
+
+	formData := map[string]string{
+		"component":  projectName,
+		"metricKeys": "duplicated_lines_density",
+	}
+
+	response, err := sentreq.GET(url, username, password, formData)
+	if err != nil {
+		return "", err
+	}
+	value := response["component"].(map[string]interface{})["measures"].([]interface{})[0].(map[string]interface{})["value"].(string)
+	return value, nil
+}
+
+func GetCoverageByProject(projectName string) (string, error) {
+	url := config.Cfg.SonarHost + "/api/measures/component"
+	username := config.Cfg.SonarUser
+	password := config.Cfg.SonarPassword
+
+	formData := map[string]string{
+		"component":  projectName,
+		"metricKeys": "coverage",
+	}
+
+	response, err := sentreq.GET(url, username, password, formData)
+	if err != nil {
+		return "", err
+	}
+	value := response["component"].(map[string]interface{})["measures"].([]interface{})[0].(map[string]interface{})["value"].(string)
+	return value, nil
+}
