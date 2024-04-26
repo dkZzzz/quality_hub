@@ -219,8 +219,9 @@ func GetIssue(c *gin.Context) {
 	}
 
 	req := sonarqubepb.GetIssueReq{
-		Username: param.Username,
-		Token:    param.Token,
+		Username:    param.Username,
+		Token:       param.Token,
+		ProjectName: param.ProjectName,
 	}
 
 	rsp, _ := rpc.GetIssue(&req)
