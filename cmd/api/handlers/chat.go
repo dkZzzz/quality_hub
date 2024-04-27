@@ -38,7 +38,7 @@ func SentSingleIssue(c *gin.Context) {
 		Token:    param.Token,
 		IssueId:  int32(param.IssueID),
 	}
-	
+
 	rsp, _ := rpc.SentSingleIssue(&req)
 	c.JSON(int(rsp.Code), gin.H{
 		"code": rsp.Code,
@@ -48,7 +48,7 @@ func SentSingleIssue(c *gin.Context) {
 }
 
 func SentProjectIssue(c *gin.Context) {
-	var param SentSingleIssueParam
+	var param SentProjectIssueParam
 
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -71,8 +71,9 @@ func SentProjectIssue(c *gin.Context) {
 	}
 
 	req := chatpb.SentProjectIssueReq{
-		Username: param.Username,
-		Token:    param.Token,
+		Username:    param.Username,
+		Token:       param.Token,
+		ProjectName: param.ProjectName,
 	}
 
 	rsp, _ := rpc.SentProjectIssue(&req)
