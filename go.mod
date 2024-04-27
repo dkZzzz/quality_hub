@@ -3,6 +3,7 @@ module github.com/dkZzzz/quality_hub
 go 1.21.3
 
 require (
+	github.com/dkZzzz/openai_next_api v0.1.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/go-redis/redis v6.15.9+incompatible

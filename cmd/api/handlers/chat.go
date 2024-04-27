@@ -36,8 +36,9 @@ func SentSingleIssue(c *gin.Context) {
 	req := chatpb.SentSingleIssueReq{
 		Username: param.Username,
 		Token:    param.Token,
+		IssueId:  int32(param.IssueID),
 	}
-
+	
 	rsp, _ := rpc.SentSingleIssue(&req)
 	c.JSON(int(rsp.Code), gin.H{
 		"code": rsp.Code,
