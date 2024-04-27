@@ -26,6 +26,6 @@ func InitDB() (*gorm.DB, error) {
 		return nil, err
 	}
 	DB = db
-	db.AutoMigrate(&User{}, &Project{}, &Report{}, &Issue{})
+	db.AutoMigrate(&User{}, &Project{}, &Report{}, &Issue{}, &Advice{})
 	return db, err
 }
