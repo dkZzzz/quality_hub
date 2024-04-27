@@ -224,3 +224,12 @@ func CraeteAdvice(ctx context.Context, issueID int, projectName, advice string) 
 	}
 	return ad.ID, nil
 }
+
+func GetProjectIssue(ctx context.Context, projectName string) ([]Issue, error) {
+	var issues []Issue
+	err := DB.WithContext(ctx).Where("project_name = ?", projectName).Find(&issues).Error
+	if err != nil {
+		return nil, err
+	}
+	return issues, nil
+}

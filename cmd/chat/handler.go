@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/dkZzzz/quality_hub/config"
 	"github.com/dkZzzz/quality_hub/db/mysql"
@@ -15,6 +16,8 @@ import (
 type ChatServerImpl struct {
 	chatpb.UnimplementedChatServer
 }
+
+var wg sync.WaitGroup
 
 var (
 	token_error         = "token验证失败"
@@ -104,9 +107,68 @@ func (s *ChatServerImpl) SentProjectIssue(ctx context.Context, in *chatpb.SentPr
 		}, nil
 	}
 
+	issues, err := mysql.GetProjectIssue(ctx, in.ProjectName)
+	if err != nil {
+		return &chatpb.SentProjectIssueResp{
+			Code:    500,
+			Message: get_issue_error,
+			Data:    nil,
+		}, nil
+	}
+
+	for _, issue := range issues {
+		wg.Add(1)
+		go func(issue mysql.Issue) {
+			defer wg.Done()
+			code, err := find(&issue)
+			if err != nil {
+				return
+			}
+
+			advice, err := Chat(code, issue.Message)
+			if err != nil {
+				return
+			}
+
+			_, err = mysql.CraeteAdvice(ctx, int(issue.ID), issue.ProjectName, advice)
+			if err != nil {
+				return
+			}
+		}(issue)
+	}
+
+	wg.Wait()
+
+	// code, err := find(&issue)
+	// if err != nil {
+	// 	return &chatpb.SentProjectIssueResp{
+	// 		Code:    500,
+	// 		Message: get_codeline_error,
+	// 		Data:    nil,
+	// 	}, nil
+	// }
+
+	// advice, err := Chat(code, issue.Message)
+	// if err != nil {
+	// 	return &chatpb.SentProjectIssueResp{
+	// 		Code:    500,
+	// 		Message: chat_eror,
+	// 		Data:    nil,
+	// 	}, nil
+	// }
+
+	// _, err = mysql.CraeteAdvice(ctx, int(issue.ID), issue.ProjectName, advice)
+	// if err != nil {
+	// 	return &chatpb.SentProjectIssueResp{
+	// 		Code:    500,
+	// 		Message: create_advice_error,
+	// 		Data:    nil,
+	// 	}, nil
+	// }
+
 	return &chatpb.SentProjectIssueResp{
 		Code:    200,
-		Message: "",
+		Message: sent_issue_success,
 		Data:    nil,
 	}, nil
 }
