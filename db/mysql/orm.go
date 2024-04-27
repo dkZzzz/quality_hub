@@ -233,3 +233,21 @@ func GetProjectIssue(ctx context.Context, projectName string) ([]Issue, error) {
 	}
 	return issues, nil
 }
+
+func GetAdviceByID(ctx context.Context, adviceID int) (Advice, error) {
+	var ad Advice
+	err := DB.WithContext(ctx).Where("id = ?", adviceID).Find(&ad).Error
+	if err != nil {
+		return ad, err
+	}
+	return ad, nil
+}
+
+func GetProjectAdvice(ctx context.Context, projectName string) ([]Advice, error) {
+	var advices []Advice
+	err := DB.WithContext(ctx).Where("project_name = ?", projectName).Find(&advices).Error
+	if err != nil {
+		return nil, err
+	}
+	return advices, nil
+}
