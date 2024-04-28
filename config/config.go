@@ -39,16 +39,16 @@ type Config struct {
 }
 
 func init() {
-	_, err := LoadConfig()
+	_, err := LoadConfig("config.json")
 	if err != nil {
 		panic(err)
 	}
 	log.Println(Cfg)
 }
 
-func LoadConfig() (*Config, error) {
+func LoadConfig(name string) (*Config, error) {
 	config := &Config{}
-	file, err := os.Open("config.json")
+	file, err := os.Open(name)
 
 	if err != nil {
 		return config, err
