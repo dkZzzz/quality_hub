@@ -158,6 +158,9 @@ func (s *UserServerImpl) ModifyUsername(ctx context.Context, in *userpb.UserModi
 		}, nil
 	}
 
+	redis.Client.WithContext(ctx).Del(in.Username)
+	redis.Client.WithContext(ctx).Set(in.NewUsername, in.Token, 24*time.Hour)
+
 	return &userpb.Resp{
 		Code: 200,
 		Msg:  modify_success,
@@ -192,7 +195,6 @@ func (s *UserServerImpl) ModifyPassword(ctx context.Context, in *userpb.UserModi
 			Code: 403,
 			Msg:  token_error,
 		}, nil
-
 	}
 
 	err := mysql.ModifyPassword(ctx, in.Username, in.NewPassword)

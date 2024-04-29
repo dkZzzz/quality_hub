@@ -78,20 +78,27 @@ func (s *SonarQubeServerImpl) CreateProject(ctx context.Context, in *sonarqubepb
 	}
 
 	// 在本地库创建记录
-	var project mysql.Project
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		project, _ = mysql.CreateProject(ctx, in.Username, in.ProjectName, in.BranchName, in.Url, in.Token)
-	}()
-	wg.Wait()
+	project, _ := mysql.CreateProject(ctx, in.Username, in.ProjectName, in.BranchName, in.Url, in.Token)
 
 	// 处理url
 	tmp := strings.Split(in.Url, "/")
 	pName := tmp[len(tmp)-1]
 	pName = pName[:len(pName)-4]
 	path := config.Cfg.CodeStorePath + pName
+
+	// 检测目录是否存在
+	if _, err := os.Stat(path); err == nil {
+		// 目录存在，删除目录
+		if err := os.RemoveAll(path); err != nil {
+			// 删除目录失败
+			// 处理错误，可以输出日志或者返回错误给调用者
+			return &sonarqubepb.CreateProjectResp{
+				Code:    500,
+				Message: clone_project_error,
+				Data:    nil,
+			}, nil
+		}
+	}
 
 	// 克隆代码
 	err = clone.Clone(in.Url, pName)

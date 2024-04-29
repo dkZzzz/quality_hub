@@ -80,7 +80,7 @@ func CheckUser(ctx context.Context, username, password string) (int, error) {
 // user模块删除用户
 func ModifyUsername(ctx context.Context, oldUsername, NewUsername string) error {
 	var user User
-	err := DB.WithContext(ctx).Where("username = ?", oldUsername).First(user).Update("username", NewUsername).Error
+	err := DB.WithContext(ctx).Where("username = ?", oldUsername).First(&user).Update("username", NewUsername).Error
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func ModifyPassword(ctx context.Context, username, newPassword string) error {
 		return err
 	}
 
-	err = DB.WithContext(ctx).Where("username = ?", username).First(user).Update("password", password).Error
+	err = DB.WithContext(ctx).Where("username = ?", username).First(&user).Update("password", password).Error
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func ModifyPassword(ctx context.Context, username, newPassword string) error {
 // user模块修改邮箱
 func ModifyEmail(ctx context.Context, username, newEmail string) error {
 	var user User
-	err := DB.WithContext(ctx).Where("username = ?", username).First(user).Update("email", newEmail).Error
+	err := DB.WithContext(ctx).Where("username = ?", username).First(&user).Update("email", newEmail).Error
 	if err != nil {
 		return err
 	}

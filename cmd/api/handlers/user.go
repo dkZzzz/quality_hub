@@ -215,6 +215,7 @@ func ModifyPassword(c *gin.Context) {
 		Username:    param.Username,
 		Password:    param.OldPassword,
 		NewPassword: param.NewPassword,
+		Token:       param.Token,
 	})
 	c.JSON(toResponse(rsp))
 }
