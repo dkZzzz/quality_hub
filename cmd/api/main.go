@@ -8,9 +8,17 @@ import (
 	"github.com/dkZzzz/quality_hub/srv/sonarqubesrv"
 	"github.com/dkZzzz/quality_hub/srv/usersrv"
 	"github.com/gin-gonic/gin"
+
+	"net/http"
+	_ "net/http/pprof"
 )
 
 func main() {
+	// 使用pprof监听
+	go func() {
+		http.ListenAndServe("localhost:6060", nil)
+	}()
+
 	go usersrv.Init_server()
 	go usersrv.Init_client()
 
@@ -30,5 +38,6 @@ func main() {
 
 	r := gin.Default()
 	router.RegisterRoutes(r)
+
 	r.Run("localhost:8080")
 }
